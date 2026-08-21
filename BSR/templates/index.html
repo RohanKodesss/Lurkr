@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BSR — Browser Security Report</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <header class="app-header">
+            <div class="logo-icon">🛡️</div>
+            <h1>Browser Security Report</h1>
+            <p class="tagline">Check your browser, URL safety, and email breaches in one quick scan.</p>
+        </header>
+
+        <!-- Error Alert Banner -->
+        <div id="errorBanner" class="error-banner hidden">
+            <span id="errorMessage">Please provide at least one check input.</span>
+        </div>
+
+        <!-- STATE 1: FORM SECTION -->
+        <section id="formState" class="card">
+            <h2>Start Security Scan</h2>
+            <form id="checkForm">
+                <div class="form-group">
+                    <label for="urlInput">
+                        <span class="icon">🔗</span> Check URL (Phishing & HTTPS Status)
+                    </label>
+                    <input type="url" id="urlInput" placeholder="e.g. https://example.com or http://fake-login.com">
+                    <small class="help-text">Enter any website address to verify ssl certs & suspicious patterns.</small>
+                </div>
+
+                <div class="form-group">
+                    <label for="emailInput">
+                        <span class="icon">✉️</span> Check Email Address (Data Breaches)
+                    </label>
+                    <input type="email" id="emailInput" placeholder="e.g. user@example.com">
+                    <small class="help-text">Checks if your email has been exposed in public database leaks.</small>
+                </div>
+
+                <div class="form-group">
+                    <label for="browserInput">
+                        <span class="icon">🌐</span> Browser Version (Update Check)
+                    </label>
+                    <div class="input-with-button">
+                        <input type="text" id="browserInput" placeholder="Auto-detecting browser...">
+                        <button type="button" id="detectBtn" class="btn-secondary">Auto Detect</button>
+                    </div>
+                    <small class="help-text">Compare your browser against the latest safe version benchmarks.</small>
+                </div>
+
+                <button type="submit" id="submitBtn" class="btn-primary">
+                    <span>Run Security Check</span>
+                </button>
+            </form>
+        </section>
+
+        <!-- LOADING SPINNER -->
+        <div id="loadingState" class="loading-container hidden">
+            <div class="spinner"></div>
+            <p>Analyzing browser version, scanning URL patterns, and checking breach registries...</p>
+        </div>
+
+        <!-- STATE 2: REPORT SECTION -->
+        <section id="reportState" class="hidden">
+            <!-- Score Card -->
+            <div class="card score-card">
+                <div class="score-container">
+                    <div id="scoreGauge" class="score-circle">
+                        <span id="scoreValue">0</span>
+                        <span class="score-max">/ 100</span>
+                    </div>
+                    <div class="score-details">
+                        <h2 id="scoreTitle">Overall Security Score</h2>
+                        <p id="scoreDescription">Review detailed findings below.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Individual Check Results Grid -->
+            <div class="results-header">
+                <h3>Detailed Security Findings</h3>
+            </div>
+            
+            <div id="checkResultsGrid" class="results-grid">
+                <!-- Dynamic check cards inserted here via JS -->
+            </div>
+
+            <!-- Action Controls -->
+            <div class="action-footer">
+                <button type="button" id="rescanBtn" class="btn-secondary">
+                    🔄 Run Another Check
+                </button>
+            </div>
+        </section>
+
+        <!-- Footer -->
+        <footer class="app-footer">
+            <p>BSR — Hackathon Security Suite &bull; Simple, Frictionless Protection</p>
+        </footer>
+    </div>
+
+    <script src="{{ url_for('static', filename='script.js') }}"></script>
+</body>
+</html>
