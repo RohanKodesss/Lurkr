@@ -40,5 +40,32 @@ class TestAppEndpoints(unittest.TestCase):
         self.assertIn("checks", data)
         self.assertEqual(len(data["checks"]), 3)
 
+    def test_recent_scans_in_memory_cache(self):
+        # 1. Clear memory
+        self.app.delete('/recent-scans')
+        
+        # 2. Perform a check
+        payload = {
+            "url": "https://example.com",
+            "email": "user@example.com",
+            "browser_version": "128"
+        }
+        self.app.post('/check', data=json.dumps(payload), content_type='application/json')
+        
+        # 3. Verify item exists in /recent-scans
+        response = self.app.get('/recent-scans')
+        self.assertEqual(response.status_code, 200)
+        data = json.loads(response.data)
+        self.assertGreater(data["count"], 0)
+        self.assertEqual(data["scans"][0]["url"], "https://example.com")
+        
+        # 4. Clear cache and verify count drops to 0
+        del_response = self.app.delete('/recent-scans')
+        self.assertEqual(del_response.status_code, 200)
+        
+        get_again = self.app.get('/recent-scans')
+        data_again = json.loads(get_again.data)
+        self.assertEqual(data_again["count"], 0)
+
 if __name__ == '__main__':
     unittest.main()

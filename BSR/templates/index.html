@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>BSR — Browser Security Report</title>
+    <title>Lurkr — Security Report</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -14,7 +14,7 @@
         <!-- Header -->
         <header class="app-header">
             <div class="logo-icon">🛡️</div>
-            <h1>Browser Security Report</h1>
+            <h1>Lurkr — Security Report</h1>
             <p class="tagline">Check your browser, URL safety, and email breaches in one quick scan.</p>
         </header>
 
@@ -99,9 +99,24 @@
             </div>
         </section>
 
+        <!-- TEMPORARY IN-MEMORY RAM STORAGE DRAWER -->
+        <section id="cacheState" class="card cache-card">
+            <div class="cache-header">
+                <h3>💾 Temporary Backend Memory (RAM Cache)</h3>
+                <div class="cache-actions">
+                    <button id="viewCacheBtn" class="btn-sm btn-outline">View RAM Cache</button>
+                    <button id="clearCacheBtn" class="btn-sm btn-danger hidden">Clear Memory</button>
+                </div>
+            </div>
+            <p class="cache-desc">Searched items are held temporarily in server memory (RAM) and automatically discarded when the server restarts or memory buffer rolls over.</p>
+            <div id="cacheList" class="cache-list hidden">
+                <!-- Cached items populated via JS -->
+            </div>
+        </section>
+
         <!-- Footer -->
         <footer class="app-footer">
-            <p>BSR — Hackathon Security Suite &bull; Simple, Frictionless Protection</p>
+            <p>Lurkr — Hackathon Security Suite &bull; Simple, Frictionless Protection</p>
         </footer>
     </div>
 

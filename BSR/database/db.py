@@ -2,7 +2,7 @@ import sqlite3
 import os
 from datetime import datetime, timezone
 
-DB_PATH = os.path.join(os.path.dirname(__file__), "bsr.db")
+DB_PATH = os.path.join(os.path.dirname(__file__), "lurkr.db")
 SCHEMA_PATH = os.path.join(os.path.dirname(__file__), "schema.sql")
 
 def get_db():

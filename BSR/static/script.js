@@ -18,6 +18,10 @@ document.addEventListener('DOMContentLoaded', () => {
     const scoreDescription = document.getElementById('scoreDescription');
     const checkResultsGrid = document.getElementById('checkResultsGrid');
 
+    const viewCacheBtn = document.getElementById('viewCacheBtn');
+    const clearCacheBtn = document.getElementById('clearCacheBtn');
+    const cacheList = document.getElementById('cacheList');
+
     // Auto-detect browser user agent
     function autoDetectBrowser() {
         const ua = navigator.userAgent;
@@ -102,6 +106,56 @@ document.addEventListener('DOMContentLoaded', () => {
         rescanBtn.addEventListener('click', () => {
             showForm();
         });
+    }
+
+    // RAM Cache View/Toggle Event
+    if (viewCacheBtn) {
+        viewCacheBtn.addEventListener('click', fetchRecentScans);
+    }
+
+    if (clearCacheBtn) {
+        clearCacheBtn.addEventListener('click', clearRecentScans);
+    }
+
+    async function fetchRecentScans() {
+        try {
+            const res = await fetch('/recent-scans');
+            const data = await res.json();
+            
+            cacheList.innerHTML = '';
+
+            if (!data.scans || data.scans.length === 0) {
+                cacheList.innerHTML = '<p class="cache-desc">No scans in temporary RAM memory.</p>';
+                clearCacheBtn.classList.add('hidden');
+            } else {
+                data.scans.forEach(item => {
+                    const el = document.createElement('div');
+                    el.className = 'cache-item';
+                    el.innerHTML = `
+                        <div class="cache-item-details">
+                            <strong>URL: ${escapeHtml(item.url)} | Email: ${escapeHtml(item.email)}</strong>
+                            <span class="cache-time">Score: ${item.overall_score}/100 &bull; ${escapeHtml(item.timestamp)}</span>
+                        </div>
+                    `;
+                    cacheList.appendChild(el);
+                });
+                clearCacheBtn.classList.remove('hidden');
+            }
+
+            cacheList.classList.toggle('hidden');
+            viewCacheBtn.textContent = cacheList.classList.contains('hidden') ? 'View RAM Cache' : 'Hide RAM Cache';
+        } catch (err) {
+            console.error("Could not fetch memory cache", err);
+        }
+    }
+
+    async function clearRecentScans() {
+        try {
+            await fetch('/recent-scans', { method: 'DELETE' });
+            fetchRecentScans();
+        } catch (err) {
+            console.error("Could not clear memory cache", err);
+        }
     }
 
     // Render Report View
