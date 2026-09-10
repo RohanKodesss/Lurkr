@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Lurkr — See the threat before it sees you</title>
+    <link rel="icon" type="image/png" href="{{ url_for('static', filename='favicon.png') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -16,7 +17,7 @@
         <aside class="sidebar" id="sidebar">
             <div class="sidebar-brand">
                 <div class="brand-logo">
-                    <span class="eye-icon">👁️</span>
+                    <img src="{{ url_for('static', filename='logo.png') }}" alt="Lurkr Logo" class="brand-logo-img">
                     <span class="radar-pulse"></span>
                 </div>
                 <div class="brand-text">
@@ -61,7 +62,7 @@
             <!-- TOP BAR (MOBILE BRANDING & STATUS) -->
             <header class="top-bar">
                 <div class="mobile-brand">
-                    <span class="eye-icon">👁️</span>
+                    <img src="{{ url_for('static', filename='logo.png') }}" alt="Lurkr Logo" class="mobile-logo-img">
                     <span class="brand-name">LURKR</span>
                 </div>
                 <div class="protection-status-pill">
@@ -83,7 +84,7 @@
                         <div class="pulse-ring ring-2"></div>
                         <div class="pulse-ring ring-3"></div>
                         <div class="radar-center">
-                            <span class="radar-eye">👁️</span>
+                            <img src="{{ url_for('static', filename='logo.png') }}" alt="Lurkr Radar Logo" class="hero-logo-img">
                         </div>
                     </div>
 
@@ -264,7 +265,9 @@
                 <div id="loadingState" class="loading-container hidden">
                     <div class="radar-loader">
                         <div class="loader-sweep"></div>
-                        <div class="loader-icon">👁️</div>
+                        <div class="loader-icon">
+                            <img src="{{ url_for('static', filename='logo.png') }}" alt="Lurkr Scanner Logo" class="loader-logo-img">
+                        </div>
                     </div>
                     <h3>Scanning Security Signals...</h3>
                     <p>Analyzing browser version, evaluating domain patterns, and querying breach registries.</p>

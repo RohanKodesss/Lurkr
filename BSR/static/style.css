@@ -79,10 +79,36 @@ body.dark-theme {
 
 .brand-logo {
     position: relative;
-    font-size: 24px;
     display: flex;
     align-items: center;
     justify-content: center;
+}
+
+.brand-logo-img {
+    height: 40px;
+    width: auto;
+    object-fit: contain;
+}
+
+.mobile-logo-img {
+    height: 30px;
+    width: auto;
+    object-fit: contain;
+}
+
+.hero-logo-img {
+    width: 140px;
+    height: auto;
+    object-fit: contain;
+    border-radius: 50%;
+    filter: drop-shadow(0 0 20px rgba(46, 230, 166, 0.5));
+}
+
+.loader-logo-img {
+    width: 50px;
+    height: auto;
+    object-fit: contain;
+    filter: drop-shadow(0 0 10px rgba(46, 230, 166, 0.6));
 }
 
 .brand-text {
@@ -245,19 +271,15 @@ body.dark-theme {
 }
 
 .radar-center {
-    width: 80px;
-    height: 80px;
+    width: 150px;
+    height: 150px;
     border-radius: 50%;
-    background: radial-gradient(circle, var(--accent-mint) 0%, var(--accent-mint-dark) 100%);
+    background: radial-gradient(circle, rgba(46, 230, 166, 0.15) 0%, rgba(0, 0, 0, 0.8) 100%);
     display: flex;
     align-items: center;
     justify-content: center;
-    box-shadow: 0 0 30px var(--accent-mint);
+    box-shadow: 0 0 30px var(--accent-mint-glow);
     z-index: 2;
-}
-
-.radar-eye {
-    font-size: 40px;
 }
 
 .pulse-ring {
@@ -706,8 +728,10 @@ body.dark-theme {
 }
 
 .loader-icon {
-    font-size: 32px;
     z-index: 2;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
 /* Verdict Banner */
