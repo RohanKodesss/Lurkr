@@ -4,12 +4,15 @@ document.addEventListener('DOMContentLoaded', () => {
     // ------------------------------------------------------------------
     const views = {
         hero: document.getElementById('heroView'),
+        features: document.getElementById('featuresView'),
+        about: document.getElementById('aboutView'),
+        contact: document.getElementById('contactView'),
         dashboard: document.getElementById('dashboardView'),
         scan: document.getElementById('scanView'),
         history: document.getElementById('historyView')
     };
 
-    const navItems = document.querySelectorAll('.sidebar-nav .nav-item, .bottom-nav .bottom-nav-item');
+    const navItems = document.querySelectorAll('.top-pill-nav .nav-item, .bottom-nav .bottom-nav-item');
     
     // Scanner Form & Views
     const formState = document.getElementById('formState');
@@ -70,6 +73,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // Show target view
         views[viewName].classList.remove('hidden');
+        if (typeof gsap !== 'undefined') {
+            gsap.fromTo(views[viewName], 
+                { opacity: 0, y: 16 }, 
+                { opacity: 1, y: 0, duration: 0.45, ease: 'power2.out' }
+            );
+        }
 
         // Sync Nav active states
         navItems.forEach(item => {
@@ -434,4 +443,171 @@ document.addEventListener('DOMContentLoaded', () => {
                   .replace(/"/g, "&quot;")
                   .replace(/'/g, "&#039;");
     }
+
+    // ------------------------------------------------------------------
+    // HERO QUICK SCAN HANDLER
+    // ------------------------------------------------------------------
+    const heroQuickScanForm = document.getElementById('heroQuickScanForm');
+    const heroQuickInput = document.getElementById('heroQuickInput');
+
+    if (heroQuickScanForm && heroQuickInput) {
+        heroQuickScanForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            const val = heroQuickInput.value.trim();
+            if (!val) {
+                showView('scan');
+                return;
+            }
+
+            if (val.includes('@')) {
+                emailInput.value = val;
+                urlInput.value = '';
+            } else {
+                urlInput.value = val;
+                emailInput.value = '';
+            }
+
+            showView('scan');
+            checkForm.dispatchEvent(new Event('submit'));
+        });
+    }
+
+    // ------------------------------------------------------------------
+    // THREE.JS 3D CANVAS & GSAP ANIMATION ENGINE
+    // ------------------------------------------------------------------
+    function initThreeJSBackground() {
+        const canvas = document.getElementById('hero3dCanvas');
+        if (!canvas || typeof THREE === 'undefined') return;
+
+        const scene = new THREE.Scene();
+        const camera = new THREE.PerspectiveCamera(65, window.innerWidth / window.innerHeight, 0.1, 1000);
+        camera.position.z = 35;
+
+        const renderer = new THREE.WebGLRenderer({ canvas: canvas, alpha: true, antialias: true });
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+
+        // 3D Wireframe Node Ring (TorusKnot)
+        const geometry = new THREE.TorusKnotGeometry(12, 3, 120, 16);
+        const material = new THREE.MeshBasicMaterial({
+            color: 0x7FB2FF,
+            wireframe: true,
+            transparent: true,
+            opacity: 0.3
+        });
+        const torusNode = new THREE.Mesh(geometry, material);
+        scene.add(torusNode);
+
+        // Secondary Inner Wireframe Mesh
+        const innerGeo = new THREE.IcosahedronGeometry(6, 2);
+        const innerMat = new THREE.MeshBasicMaterial({
+            color: 0x6EE7B7,
+            wireframe: true,
+            transparent: true,
+            opacity: 0.25
+        });
+        const innerNode = new THREE.Mesh(innerGeo, innerMat);
+        scene.add(innerNode);
+
+        // Full-Screen Particle Swarm Cloud (1,500 particles)
+        const particleCount = 1500;
+        const particleGeo = new THREE.BufferGeometry();
+        const positions = new Float32Array(particleCount * 3);
+
+        for (let i = 0; i < particleCount * 3; i += 3) {
+            positions[i] = (Math.random() - 0.5) * 140;
+            positions[i + 1] = (Math.random() - 0.5) * 140;
+            positions[i + 2] = (Math.random() - 0.5) * 140;
+        }
+
+        particleGeo.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+        const particleMat = new THREE.PointsMaterial({
+            color: 0x7FB2FF,
+            size: 1.3,
+            transparent: true,
+            opacity: 0.55
+        });
+        const particleSystem = new THREE.Points(particleGeo, particleMat);
+        scene.add(particleSystem);
+
+        // Mouse Parallax Effect
+        let mouseX = 0, mouseY = 0;
+        document.addEventListener('mousemove', (e) => {
+            mouseX = (e.clientX / window.innerWidth - 0.5) * 2;
+            mouseY = (e.clientY / window.innerHeight - 0.5) * 2;
+        });
+
+        // Animation Render Loop
+        function animate() {
+            requestAnimationFrame(animate);
+
+            torusNode.rotation.x += 0.002;
+            torusNode.rotation.y += 0.004;
+            innerNode.rotation.x -= 0.003;
+            innerNode.rotation.y -= 0.003;
+            particleSystem.rotation.y += 0.0008;
+
+            camera.position.x += (mouseX * 5 - camera.position.x) * 0.04;
+            camera.position.y += (-mouseY * 5 - camera.position.y) * 0.04;
+            camera.lookAt(scene.position);
+
+            renderer.render(scene, camera);
+        }
+
+        animate();
+
+        // Responsive Resize Handler (Window Full Screen)
+        window.addEventListener('resize', () => {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        });
+    }
+
+    function initGSAPAnimations() {
+        if (typeof gsap === 'undefined') return;
+
+        // Header & Hero Timeline Entrance
+        const tl = gsap.timeline({ defaults: { ease: 'power3.out' } });
+
+        tl.from('.top-pill-nav', { y: -40, opacity: 0, duration: 0.8 })
+          .from('.hero-header-box .badge', { y: 15, opacity: 0, duration: 0.5 }, '-=0.4')
+          .from('.hero-title', { y: 20, opacity: 0, duration: 0.7 }, '-=0.3')
+          .from('.hero-subtext', { y: 20, opacity: 0, duration: 0.6 }, '-=0.4')
+          .from('.hero-quick-scan', { y: 20, opacity: 0, duration: 0.6 }, '-=0.4')
+          .from('.hero-trust-bar', { opacity: 0, duration: 0.5 }, '-=0.3')
+          .from('.node-card', { y: 20, opacity: 0, duration: 0.6, stagger: 0.1 }, '-=0.2')
+          .from('.metric-card-floating', { y: 30, opacity: 0, duration: 0.7, stagger: 0.12 }, '-=0.3');
+
+        // Magnetic 3D Tilt Effect on Cards
+        const cards = document.querySelectorAll('.card');
+        cards.forEach(card => {
+            card.addEventListener('mousemove', (e) => {
+                const rect = card.getBoundingClientRect();
+                const x = e.clientX - rect.left - rect.width / 2;
+                const y = e.clientY - rect.top - rect.height / 2;
+                
+                gsap.to(card, {
+                    rotationY: (x / rect.width) * 10,
+                    rotationX: (-y / rect.height) * 10,
+                    transformPerspective: 1000,
+                    duration: 0.3,
+                    ease: 'power1.out'
+                });
+            });
+
+            card.addEventListener('mouseleave', () => {
+                gsap.to(card, {
+                    rotationY: 0,
+                    rotationX: 0,
+                    duration: 0.5,
+                    ease: 'power2.out'
+                });
+            });
+        });
+    }
+
+    // Initialize 3D Visuals and GSAP Animations
+    initThreeJSBackground();
+    initGSAPAnimations();
 });

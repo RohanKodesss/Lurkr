@@ -3,73 +3,47 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Lurkr — See the threat before it sees you</title>
+    <title>Lurkr — Tactical Threat Intelligence & Security Scanner</title>
     <link rel="icon" type="image/png" href="{{ url_for('static', filename='favicon.png') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 </head>
 <body class="dark-theme">
 
+    <!-- FULL-SCREEN 3D UNCROPPED CANVAS -->
+    <canvas id="hero3dCanvas"></canvas>
+
     <div class="app-layout">
-        <!-- DESKTOP PERSISTENT SIDEBAR NAVIGATION -->
-        <aside class="sidebar" id="sidebar">
-            <div class="sidebar-brand">
-                <div class="brand-logo">
-                    <img src="{{ url_for('static', filename='logo.png') }}" alt="Lurkr Logo" class="brand-logo-img">
-                    <span class="radar-pulse"></span>
-                </div>
-                <div class="brand-text">
-                    <span class="brand-name">LURKR</span>
-                    <span class="brand-tagline">See the threat before it sees you</span>
-                </div>
+        
+        <!-- TOP STICKY GLASS PILL NAVIGATION BAR -->
+        <header class="top-pill-nav">
+            <div class="pill-brand" data-view="hero">
+                <img src="{{ url_for('static', filename='logo.png') }}" alt="Lurkr Logo" class="brand-logo-img">
+                <span class="brand-name">LURKR</span>
             </div>
 
-            <div class="protection-status-pill">
-                <span class="pulse-dot"></span>
-                <span class="status-text">Protection Active</span>
-            </div>
-
-            <nav class="sidebar-nav">
-                <a href="#hero" class="nav-item active" data-view="hero">
-                    <span class="nav-icon">🏠</span>
-                    <span class="nav-label">Home</span>
-                </a>
-                <a href="#dashboard" class="nav-item" data-view="dashboard">
-                    <span class="nav-icon">📊</span>
-                    <span class="nav-label">Dashboard</span>
-                </a>
-                <a href="#scan" class="nav-item" data-view="scan">
-                    <span class="nav-icon">🔍</span>
-                    <span class="nav-label">Security Scan</span>
-                </a>
-                <a href="#history" class="nav-item" data-view="history">
-                    <span class="nav-icon">📜</span>
-                    <span class="nav-label">RAM Cache</span>
-                </a>
+            <nav class="pill-nav-links">
+                <a href="#hero" class="nav-item active" data-view="hero">Home</a>
+                <a href="#features" class="nav-item" data-view="features">Features</a>
+                <a href="#about" class="nav-item" data-view="about">About</a>
+                <a href="#contact" class="nav-item" data-view="contact">Contact Developer</a>
+                <a href="#dashboard" class="nav-item" data-view="dashboard">Dashboard</a>
+                <a href="#scan" class="nav-item" data-view="scan">Security Scan</a>
+                <a href="#history" class="nav-item" data-view="history">RAM Cache</a>
             </nav>
 
-            <div class="sidebar-footer">
-                <p>Lurkr Threat Intelligence v2.0</p>
-                <small>Hackathon Security Suite</small>
-            </div>
-        </aside>
-
-        <!-- MAIN CONTENT AREA -->
-        <main class="main-content">
-            
-            <!-- TOP BAR (MOBILE BRANDING & STATUS) -->
-            <header class="top-bar">
-                <div class="mobile-brand">
-                    <img src="{{ url_for('static', filename='logo.png') }}" alt="Lurkr Logo" class="mobile-logo-img">
-                    <span class="brand-name">LURKR</span>
-                </div>
+            <div class="pill-actions">
                 <div class="protection-status-pill">
                     <span class="pulse-dot"></span>
-                    <span class="status-text">Active</span>
+                    <span class="status-text">Shield Active</span>
                 </div>
-            </header>
+            </div>
+        </header>
+
+        <!-- MAIN CONTENT CONTAINER (CENTERED 1200px) -->
+        <main class="main-content">
 
             <!-- ERROR ALERT BANNER -->
             <div id="errorBanner" class="error-banner hidden">
@@ -77,55 +51,263 @@
             </div>
 
             <!-- VIEW 1: HERO / LANDING SCREEN -->
-            <section id="heroView" class="view-screen active">
+            <section id="heroView" class="view-screen hero active">
+                <div class="hero-glow"></div>
                 <div class="hero-container">
-                    <div class="radar-visual">
-                        <div class="pulse-ring ring-1"></div>
-                        <div class="pulse-ring ring-2"></div>
-                        <div class="pulse-ring ring-3"></div>
-                        <div class="radar-center">
-                            <img src="{{ url_for('static', filename='logo.png') }}" alt="Lurkr Radar Logo" class="hero-logo-img">
+                    
+                    <div class="hero-header-box">
+                        <span class="badge badge--info badge--glow">⚡ THREAT INTELLIGENCE v2.0 • LIVE OBSIDIAN SHIELD</span>
+                        <h1 class="hero-title">One-Click Protection For <span class="accent-text">Phishing & Browser Security</span></h1>
+                        <p class="hero-subtext">Real-time intelligence inspecting domain typosquatting, socket SSL certificates, browser releases, and credential breach exposures in one unified scanner.</p>
+                        
+                        <!-- INTERACTIVE QUICK-SCAN BAR EMBEDDED IN HERO -->
+                        <form id="heroQuickScanForm" class="hero-quick-scan">
+                            <div class="quick-input-wrapper">
+                                <svg class="icon input-search-icon" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                                <input type="text" id="heroQuickInput" class="input quick-input" placeholder="Enter target URL or email (e.g. https://example.com or user@domain.com)">
+                            </div>
+                            <button type="submit" class="btn btn--primary quick-scan-btn">
+                                <span>Run Instant Scan</span>
+                                <svg class="icon icon--sm" viewBox="0 0 24 24"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
+                            </button>
+                        </form>
+
+                        <!-- TRUST & SUBSYSTEM BAR CHIPS -->
+                        <div class="hero-trust-bar">
+                            <span class="trust-chip"><span class="trust-dot"></span> Regex Domain Engine</span>
+                            <span class="trust-chip"><span class="trust-dot"></span> Socket SSL Validator</span>
+                            <span class="trust-chip"><span class="trust-dot"></span> HIBP Leak Query</span>
+                            <span class="trust-chip"><span class="trust-dot"></span> Ephemeral RAM Buffer</span>
                         </div>
                     </div>
 
-                    <div class="hero-text-content">
-                        <span class="hero-badge">tactical security scanner</span>
-                        <h1>Lurkr Protection from Phishing & Browser Threats</h1>
-                        <p class="hero-subtext">Real-time assessment for browser versions, domain phishing patterns, and email data breach exposures in a single unified scanner.</p>
-                        <p class="hero-disclaimer">Assessment tool based on rule-based heuristics & threat database queries.</p>
+                    <!-- OBSIDIAN GLOW NODE GRAPH & SHOWCASE GRID -->
+                    <div class="hero-showcase-wrapper">
                         
-                        <div class="hero-actions">
-                            <button id="getStartedBtn" class="btn-primary-mint btn-pill">
-                                <span>Get Started</span>
-                                <span class="arrow-icon">→</span>
-                            </button>
-                            <button id="heroDemoBtn" class="btn-secondary-dark btn-pill">
-                                <span>View Dashboard</span>
-                            </button>
+                        <!-- FLOATING DEFI / THREAT NODE DIAGRAM -->
+                        <div class="hero-nodes-grid">
+                            <div class="card node-card node-card--cortex">
+                                <div class="node-header">
+                                    <span class="node-dot dot--active"></span>
+                                    <span class="node-title">Cortex</span>
+                                </div>
+                                <span class="node-status">Active Signal</span>
+                            </div>
+
+                            <div class="card node-card node-card--sent">
+                                <div class="node-header">
+                                    <span class="node-dot dot--success"></span>
+                                    <span class="node-title">Sent</span>
+                                </div>
+                                <span class="node-value tabular-nums">0.0004968 SSL</span>
+                            </div>
+
+                            <div class="card node-card node-card--monitor">
+                                <div class="node-header">
+                                    <span class="node-dot dot--warning"></span>
+                                    <span class="node-title">Monitor</span>
+                                </div>
+                                <span class="node-status">Scanning</span>
+                            </div>
+
+                            <div class="card node-card node-card--gwent">
+                                <div class="node-header">
+                                    <span class="node-dot dot--info"></span>
+                                    <span class="node-title">Gwent</span>
+                                </div>
+                                <span class="node-status">Verified</span>
+                            </div>
+                        </div>
+
+                        <!-- 4 ASYMMETRIC GLASS SHOWCASE CARDS -->
+                        <div class="hero-cards-grid">
+                            <div class="card card--accent metric-card-floating">
+                                <div class="metric__eyebrow">Real-Time Defense Index</div>
+                                <div class="metric__value">98.2<span class="metric__unit">%</span></div>
+                                <div class="metric__delta metric__delta--up">▲ 2.4% Optimal</div>
+                                <div class="metric__foot">Active rule heuristic engine</div>
+                            </div>
+
+                            <div class="card metric-card-floating">
+                                <div class="metric__eyebrow">Live Threat Radar</div>
+                                <div class="hero-radar-preview">
+                                    <div class="radar-mini">
+                                        <div class="radar-pulse-ring"></div>
+                                        <div class="radar-mini-core">🛡️</div>
+                                    </div>
+                                    <div class="radar-text">
+                                        <span class="row__title">Continuous Protection</span>
+                                        <span class="row__meta">0 Threats Detected in RAM</span>
+                                    </div>
+                                </div>
+                                <div class="metric__foot">Real-Time Signal Interception</div>
+                            </div>
+
+                            <div class="card metric-card-floating">
+                                <div class="metric__eyebrow">Threat Vectors</div>
+                                <div class="metric__value">3<span class="metric__unit">Modules</span></div>
+                                <div class="metric__delta metric__delta--up">✓ Live Subsystems</div>
+                                <div class="metric__foot">Phishing, Breach & Browser</div>
+                            </div>
+
+                            <div class="card metric-card-floating">
+                                <div class="metric__eyebrow">Privacy Model</div>
+                                <div class="metric__value">0<span class="metric__unit">Logs</span></div>
+                                <div class="metric__delta metric__delta--up">🔒 Volatile Buffer</div>
+                                <div class="metric__foot">In-Memory RAM cache only</div>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+            </section>
+
+            <!-- VIEW 2: FEATURES SCREEN -->
+            <section id="featuresView" class="view-screen section-glow hidden">
+                <div class="section-header">
+                    <span class="badge badge--info">CORE CAPABILITIES</span>
+                    <h2>Security Features & Capabilities</h2>
+                    <p class="subtitle">Replacing 4 separate security lookups with 1 unified tactical scanner.</p>
+                </div>
+
+                <div class="features-grid">
+                    <div class="card feature-card">
+                        <div class="feature-icon">🔗</div>
+                        <div class="metric__eyebrow">MODULE 01</div>
+                        <h3>Phishing & Typosquatting Detection</h3>
+                        <p class="feature-desc">Rule-based regex analysis flagging misspelled domains, misleading subdomains, suspicious keywords, and socket HTTPS certificate validity.</p>
+                        <div class="feature-footer">
+                            <span class="badge badge--success">Socket SSL Lookup</span>
+                        </div>
+                    </div>
+
+                    <div class="card feature-card">
+                        <div class="feature-icon">✉️</div>
+                        <div class="metric__eyebrow">MODULE 02</div>
+                        <h3>Email Data Breach Query</h3>
+                        <p class="feature-desc">Connects to breach datasets (HIBP / XposedOrNot) to query exposed passwords, compromised credentials, and public leak occurrences.</p>
+                        <div class="feature-footer">
+                            <span class="badge badge--success">Breach Registry Lookup</span>
+                        </div>
+                    </div>
+
+                    <div class="card feature-card">
+                        <div class="feature-icon">🌐</div>
+                        <div class="metric__eyebrow">MODULE 03</div>
+                        <h3>Browser Release Baseline</h3>
+                        <p class="feature-desc">Extracts User-Agent metadata and benchmarks installed browser build numbers against official stable baseline releases.</p>
+                        <div class="feature-footer">
+                            <span class="badge badge--success">User-Agent Parser</span>
+                        </div>
+                    </div>
+
+                    <div class="card feature-card">
+                        <div class="feature-icon">⚡</div>
+                        <div class="metric__eyebrow">MODULE 04</div>
+                        <h3>Unified Risk Score (0–100)</h3>
+                        <p class="feature-desc">Aggregates per-check findings into one clear numeric safety index with actionable plain-language recommendations per threat signal.</p>
+                        <div class="feature-footer">
+                            <span class="badge badge--info">Composite Score Engine</span>
                         </div>
                     </div>
                 </div>
             </section>
 
-            <!-- VIEW 2: DASHBOARD SCREEN -->
-            <section id="dashboardView" class="view-screen hidden">
+            <!-- VIEW 3: ABOUT SCREEN -->
+            <section id="aboutView" class="view-screen section-glow hidden">
+                <div class="section-header">
+                    <span class="badge badge--info">MISSION & ARCHITECTURE</span>
+                    <h2>About Lurkr Threat Intelligence</h2>
+                    <p class="subtitle">See the threat before it sees you — zero persistence, zero tracking.</p>
+                </div>
+
+                <div class="about-content-grid">
+                    <div class="card about-card-main">
+                        <h3>Why We Built Lurkr</h3>
+                        <p>Everyday internet users are forced to check digital safety across fragmented websites: one for email leak checks, another for URL scanning, and a third for browser version updates. Lurkr unifies all 3 essential security signals into one interface backed by a Python Flask micro-engine.</p>
+                        
+                        <div class="about-highlights">
+                            <div class="highlight-item">
+                                <h4>Unified Microservice Architecture</h4>
+                                <p>Single POST request sends user parameters to three independent scanner modules in Flask.</p>
+                            </div>
+                            <div class="highlight-item">
+                                <h4>Fault-Tolerant Execution</h4>
+                                <p>If one API or check fails, remaining modules complete independently without breaking your report.</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="card about-card-side">
+                        <div class="metric__eyebrow">PRIVACY GUARANTEE</div>
+                        <h3>In-Memory RAM Cache</h3>
+                        <p>Lurkr does not persist scan results to disk or databases. All cache entries are held in server RAM and automatically vanish upon server restart.</p>
+                        <div class="ram-badge-box">
+                            <span class="pulse-dot"></span>
+                            <span class="status-text">Ephemeral Memory Buffer</span>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- VIEW 4: CONTACT DEVELOPER SCREEN -->
+            <section id="contactView" class="view-screen section-glow hidden">
+                <div class="section-header">
+                    <span class="badge badge--info">DEVELOPER & CONTRIBUTE</span>
+                    <h2>Contact Developer</h2>
+                    <p class="subtitle">Built with precision using Python, Flask, and the Obsidian Glow Design System.</p>
+                </div>
+
+                <div class="contact-grid">
+                    <div class="card contact-card">
+                        <div class="dev-avatar">👨‍💻</div>
+                        <h3>Lurkr Developer Team</h3>
+                        <p class="dev-role">Hackathon Threat Intelligence Suite</p>
+                        
+                        <div class="contact-links">
+                            <a href="https://github.com" target="_blank" class="btn btn--ghost btn--full">
+                                <span>GitHub Repository</span>
+                                <svg class="icon icon--sm" viewBox="0 0 24 24"><path d="M15 22v-4a4.8 4.8 0 0 0-1-3.5c3 0 6-2 6-5.5.08-1.25-.27-2.48-1-3.5.28-1.15.28-2.35 0-3.5 0 0-1 0-3 1.5-2.64-.5-5.36-.5-8 0C6 2 5 2 5 2c-.3 1.15-.3 2.35 0 3.5A5.403 5.403 0 0 0 4 9c0 3.5 3 5.5 6 5.5-.39.49-.68 1.05-.85 1.65-.17.6-.22 1.23-.15 1.85v4"/><path d="M9 18c-4.51 2-5-2-7-2"/></svg>
+                            </a>
+                            <a href="mailto:developer@example.com" class="btn btn--primary btn--full">
+                                <span>Send Feedback / Issues</span>
+                            </a>
+                        </div>
+                    </div>
+
+                    <div class="card stack-card">
+                        <div class="metric__eyebrow">TECH STACK SPECIFICATION</div>
+                        <h3>Built With Modern Standards</h3>
+                        <ul class="stack-list">
+                            <li><strong>Backend:</strong> Python 3.x + Flask Microframework</li>
+                            <li><strong>Frontend:</strong> Modern HTML5, CSS Custom Tokens (Obsidian Glow), Vanilla JS</li>
+                            <li><strong>Integrations:</strong> XposedOrNot Breach API, Socket SSL Verification, Regex Heuristics</li>
+                            <li><strong>Architecture:</strong> Single-page application, sticky top-centered glass navigation</li>
+                        </ul>
+                    </div>
+                </div>
+            </section>
+
+            <!-- VIEW 5: DASHBOARD SCREEN -->
+            <section id="dashboardView" class="view-screen section-glow hidden">
                 <div class="dashboard-header">
-                    <h2>Threat Intelligence Dashboard</h2>
-                    <p class="subtitle">Overview of system health, active monitors, and vulnerability analytics.</p>
+                    <span class="badge badge--info">INTELLIGENCE ANALYTICS</span>
+                    <h2>Meet Marvellous Insights</h2>
+                    <p class="subtitle">System health, active security monitors, and vulnerability session metrics.</p>
                 </div>
 
                 <div class="dashboard-grid">
                     <!-- MAIN STAT CARD -->
-                    <div class="card stat-card-main">
+                    <div class="card card--accent stat-card-main">
                         <div class="stat-card-header">
-                            <h3>Scans Conducted</h3>
-                            <span class="card-badge">Session Total</span>
+                            <span class="metric__eyebrow">SESSION SCANS</span>
+                            <span class="badge">Live Counter</span>
                         </div>
                         <div class="stat-gauge-container">
                             <div class="gauge-ring">
                                 <svg viewBox="0 0 100 100">
                                     <circle class="gauge-bg" cx="50" cy="50" r="40"></circle>
-                                    <circle id="gaugeProgress" class="gauge-fill" cx="50" cy="50" r="40" stroke-dasharray="251.2" stroke-dashoffset="50"></circle>
+                                    <circle id="gaugeProgress" class="gauge-fill" cx="50" cy="50" r="40" stroke-dasharray="251.2" stroke-dashoffset="251.2"></circle>
                                 </svg>
                                 <div class="gauge-center">
                                     <span id="dashScansCount" class="gauge-value">0</span>
@@ -137,8 +319,8 @@
 
                     <!-- SEVERITY CHIPS CARD -->
                     <div class="card severity-card">
-                        <h3>Severity Breakdown</h3>
-                        <p class="card-subtext">Classified threat results from current session</p>
+                        <div class="metric__eyebrow">SEVERITY BREAKDOWN</div>
+                        <h3 class="card-title">Threat Classification</h3>
                         
                         <div class="severity-chips-container">
                             <div class="severity-chip chip-critical">
@@ -164,99 +346,103 @@
 
                 <!-- SUMMARY ACTIVITY METRICS LIST -->
                 <div class="card activity-card">
-                    <h3>Active Security Monitors</h3>
+                    <div class="metric__eyebrow">MONITORING ENGINE</div>
+                    <h3 class="card-title">Active Security Subsystems</h3>
+                    
                     <div class="activity-list">
-                        <div class="activity-row">
+                        <div class="row">
                             <div class="activity-info">
-                                <span class="act-icon">🔗</span>
+                                <div class="icon-box">🔗</div>
                                 <div class="act-text">
-                                    <strong>URL Phishing & SSL Validator</strong>
-                                    <small>Regex pattern rules + Socket HTTPS SSL validation</small>
+                                    <span class="row__title">URL Phishing & SSL Validator</span>
+                                    <span class="row__meta">Regex domain heuristics + SSL certificate lookup</span>
                                 </div>
                             </div>
-                            <span class="act-status status-active">Active</span>
+                            <span class="badge badge--success">Active</span>
                         </div>
 
-                        <div class="activity-row">
+                        <div class="row">
                             <div class="activity-info">
-                                <span class="act-icon">✉️</span>
+                                <div class="icon-box">✉️</div>
                                 <div class="act-text">
-                                    <strong>Email Breach Registry Query</strong>
-                                    <small>XposedOrNot / HIBP leak dataset lookup</small>
+                                    <span class="row__title">Email Breach Registry Query</span>
+                                    <span class="row__meta">XposedOrNot / HIBP leak dataset lookup</span>
                                 </div>
                             </div>
-                            <span class="act-status status-active">Active</span>
+                            <span class="badge badge--success">Active</span>
                         </div>
 
-                        <div class="activity-row">
+                        <div class="row">
                             <div class="activity-info">
-                                <span class="act-icon">🌐</span>
+                                <div class="icon-box">🌐</div>
                                 <div class="act-text">
-                                    <strong>Browser Version Benchmark</strong>
-                                    <small>User-Agent parsing vs stable version baseline</small>
+                                    <span class="row__title">Browser Release Benchmark</span>
+                                    <span class="row__meta">User-Agent parsing vs stable version release baseline</span>
                                 </div>
                             </div>
-                            <span class="act-status status-active">Active</span>
+                            <span class="badge badge--success">Active</span>
                         </div>
 
-                        <div class="activity-row">
+                        <div class="row">
                             <div class="activity-info">
-                                <span class="act-icon">💾</span>
+                                <div class="icon-box">💾</div>
                                 <div class="act-text">
-                                    <strong>Temporary RAM History Buffer</strong>
-                                    <small>Bounded in-memory cache (Cleared on restart)</small>
+                                    <span class="row__title">Temporary RAM Buffer</span>
+                                    <span class="row__meta">In-memory volatile cache (Cleared on process restart)</span>
                                 </div>
                             </div>
-                            <span class="act-status status-active">Active</span>
+                            <span class="badge badge--info">Volatile</span>
                         </div>
                     </div>
                 </div>
             </section>
 
-            <!-- VIEW 3: SECURITY SCANNER / RESULTS SCREEN -->
-            <section id="scanView" class="view-screen hidden">
+            <!-- VIEW 6: SECURITY SCANNER / RESULTS SCREEN -->
+            <section id="scanView" class="view-screen section-glow hidden">
                 
                 <!-- SCAN INPUT FORM CARD -->
                 <div id="formState" class="card scan-input-card">
                     <div class="card-title-row">
-                        <button type="button" id="backToDashBtn" class="btn-icon-back">← Back</button>
-                        <h2>Check Links & Avoid Risks</h2>
+                        <button type="button" id="backToDashBtn" class="btn btn--ghost btn--sm">← Back</button>
+                        <h2>Assess Threat Signals</h2>
                     </div>
+                    <p class="subtitle">Execute unified inspection across target domain, email identity, and browser environment.</p>
 
                     <form id="checkForm">
                         <div class="form-group">
-                            <label for="urlInput">
-                                <span class="icon">🔗</span> Target URL (Phishing & Certificate Check)
+                            <label for="urlInput" class="form-label">
+                                <span>Target URL (Phishing & SSL Check)</span>
                             </label>
                             <div class="input-wrapper">
-                                <input type="url" id="urlInput" placeholder="Paste URL (e.g. https://example.com or http://fake-login.com)">
+                                <input type="url" id="urlInput" class="input" placeholder="https://example.com or http://suspicious-login.com">
                             </div>
-                            <small class="help-text">Evaluates domain typosquatting, suspicious keywords, and SSL cert status.</small>
+                            <small class="help-text">Flags domain typosquatting, keywords, and SSL cert validity.</small>
                         </div>
 
                         <div class="form-group">
-                            <label for="emailInput">
-                                <span class="icon">✉️</span> Email Address (Data Leak Check)
+                            <label for="emailInput" class="form-label">
+                                <span>Email Address (Data Leak Check)</span>
                             </label>
                             <div class="input-wrapper">
-                                <input type="email" id="emailInput" placeholder="e.g. user@example.com">
+                                <input type="email" id="emailInput" class="input" placeholder="user@example.com">
                             </div>
-                            <small class="help-text">Queries breach databases for exposed credentials and leaks.</small>
+                            <small class="help-text">Queries breach registries for exposed accounts and leak events.</small>
                         </div>
 
                         <div class="form-group">
-                            <label for="browserInput">
-                                <span class="icon">🌐</span> Browser Version (Vulnerability Check)
+                            <label for="browserInput" class="form-label">
+                                <span>Browser Version (Vulnerability Baseline)</span>
                             </label>
                             <div class="input-with-button">
-                                <input type="text" id="browserInput" placeholder="Auto-detecting browser version...">
-                                <button type="button" id="detectBtn" class="btn-outline-mint">Auto Detect</button>
+                                <input type="text" id="browserInput" class="input" placeholder="Auto-detecting browser version...">
+                                <button type="button" id="detectBtn" class="btn btn--ghost">Auto Detect</button>
                             </div>
-                            <small class="help-text">Compares version against safe release benchmarks.</small>
+                            <small class="help-text">Compares current user agent against stable release numbers.</small>
                         </div>
 
-                        <button type="submit" id="submitBtn" class="btn-primary-mint">
-                            <span>Run Lurkr Security Scan</span>
+                        <button type="submit" id="submitBtn" class="btn btn--primary btn--full">
+                            <span>Execute Lurkr Scan</span>
+                            <svg class="icon icon--sm" viewBox="0 0 24 24"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
                         </button>
                     </form>
                 </div>
@@ -270,7 +456,7 @@
                         </div>
                     </div>
                     <h3>Scanning Security Signals...</h3>
-                    <p>Analyzing browser version, evaluating domain patterns, and querying breach registries.</p>
+                    <p class="subtitle">Analyzing browser build, inspecting domain heuristics, and querying leak databases.</p>
                 </div>
 
                 <!-- SCAN RESULT CARD -->
@@ -280,20 +466,21 @@
                         <div class="verdict-header">
                             <span id="verdictIcon" class="verdict-icon">🛡️</span>
                             <div>
-                                <span class="verdict-label">Verdict Assessment</span>
+                                <span class="metric__eyebrow">VERDICT ASSESSMENT</span>
                                 <h2 id="verdictTitle">SAFE</h2>
                             </div>
                         </div>
 
                         <div class="score-circle-mini" id="scoreGauge">
-                            <span id="scoreValue">100</span>
+                            <span id="scoreValue" class="tabular-nums">100</span>
                             <span class="score-denom">/100</span>
                         </div>
                     </div>
 
-                    <!-- MANDATORY WHY FLAGGED REASONING LIST -->
+                    <!-- WHY FLAGGED REASONING LIST -->
                     <div class="reasons-section">
-                        <h3>Why Flagged / Security Findings</h3>
+                        <span class="metric__eyebrow">FINDINGS SUMMARY</span>
+                        <h3 class="card-title">Security Findings & Observations</h3>
                         <ul id="reasonsList" class="reasons-bullet-list">
                             <!-- Populated dynamically via JS -->
                         </ul>
@@ -301,31 +488,33 @@
 
                     <!-- DETAILED PER-CHECK BREAKDOWN -->
                     <div class="results-breakdown">
-                        <h3>Module Detailed Status</h3>
+                        <span class="metric__eyebrow">SUBSYSTEM METRICS</span>
+                        <h3 class="card-title">Detailed Inspection Modules</h3>
                         <div id="checkResultsGrid" class="results-grid">
                             <!-- Dynamic cards inserted via JS -->
                         </div>
                     </div>
 
                     <div class="result-actions">
-                        <button type="button" id="rescanBtn" class="btn-primary-mint">
+                        <button type="button" id="rescanBtn" class="btn btn--primary">
                             <span>Run Another Scan</span>
                         </button>
                     </div>
                 </div>
             </section>
 
-            <!-- VIEW 4: RAM CACHE / HISTORY SCREEN -->
-            <section id="historyView" class="view-screen hidden">
+            <!-- VIEW 7: RAM CACHE / HISTORY SCREEN -->
+            <section id="historyView" class="view-screen section-glow hidden">
                 <div class="card history-card">
                     <div class="history-header">
                         <div>
+                            <span class="badge badge--info">EPHEMERAL BUFFER</span>
                             <h2>In-Memory RAM Cache</h2>
-                            <p class="subtitle">Temporary backend buffer held in server RAM (Cleared automatically on restart).</p>
+                            <p class="subtitle">Temporary backend buffer held in server RAM (Cleared on process restart).</p>
                         </div>
                         <div class="history-controls">
-                            <button id="refreshCacheBtn" class="btn-outline-mint">Refresh</button>
-                            <button id="clearCacheBtn" class="btn-danger-red">Clear Memory</button>
+                            <button id="refreshCacheBtn" class="btn btn--ghost">Refresh</button>
+                            <button id="clearCacheBtn" class="btn btn--ghost btn--danger">Clear RAM</button>
                         </div>
                     </div>
 
@@ -341,23 +530,21 @@
     <!-- MOBILE BOTTOM NAVIGATION BAR -->
     <nav class="bottom-nav">
         <a href="#hero" class="bottom-nav-item active" data-view="hero">
-            <span class="nav-icon">🏠</span>
             <span class="nav-label">Home</span>
         </a>
-        <a href="#dashboard" class="bottom-nav-item" data-view="dashboard">
-            <span class="nav-icon">📊</span>
-            <span class="nav-label">Dashboard</span>
+        <a href="#features" class="bottom-nav-item" data-view="features">
+            <span class="nav-label">Features</span>
         </a>
         <a href="#scan" class="bottom-nav-item" data-view="scan">
-            <span class="nav-icon">🔍</span>
             <span class="nav-label">Scan</span>
         </a>
-        <a href="#history" class="bottom-nav-item" data-view="history">
-            <span class="nav-icon">📜</span>
-            <span class="nav-label">RAM</span>
+        <a href="#dashboard" class="bottom-nav-item" data-view="dashboard">
+            <span class="nav-label">Dashboard</span>
         </a>
     </nav>
 
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <script src="{{ url_for('static', filename='script.js') }}"></script>
 </body>
 </html>
