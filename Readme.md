@@ -1,237 +1,298 @@
-# BSR — Browser Security Report
+# Lurkr — 3-in-1 Digital Safety Scanner
 
-A single tool that checks your browser version, a URL, and an email address for security risks — replacing the need to visit multiple separate sites.
+> *"See the threat before it sees you."*
 
-## Problem
+**Lurkr** is a unified digital safety scanner built for non-technical everyday users. It evaluates a web URL, an email address, and your current browser version in under 3 seconds — replacing the friction of visiting multiple separate security portals with a single real-time assessment and plain-language fixes.
 
-Everyday users must visit multiple separate tools to check their digital safety — one site for breach checks, one for URL scans, one for browser update status. No single package runs all checks together. As a result, users either skip checks entirely (too much friction) or miss checks they don't know exist.
+---
 
-## Solution
+## 🎯 The Problem
 
-BSR is a single web app (one interface, one Flask backend) that runs all checks together — browser version, URL phishing signals, and email breach status — and returns one combined report with a score, flags, and fixes. Core pitch: replace 4 tools with 1.
+Everyday users are forced to juggle multiple disjointed tools just to check their digital safety:
+- One site for data breach checks
+- Another for URL and phishing scans
+- A separate setting or website for browser update audits
 
-## Key Features
+Because of high friction and complex technical jargon, most users either skip security checks entirely or miss critical vulnerabilities they did not know existed.
 
-- URL phishing check — flags misspelled domains, misleading subdomains, suspicious redirects
-- HTTPS / certificate validity check — flags HTTP-only or invalid/expired certificates
-- Email breach check — checks a submitted email against a breach-checking API
-- Browser version check — compares current browser version against the latest known stable version
-- Combined security score (0–100) with deductions per risk found
-- Individual check results — status, findings, and recommendation shown per check, not just an overall score
-- Actionable, plain-language recommendations for each flagged risk
-- Independent module failure handling — if one check fails/is unavailable, the others still complete and the report marks the unavailable check
+---
 
-## Demo
+## 💡 The Solution
 
-[Placeholder — add link to live demo or demo video here]
+**Lurkr** consolidates these checks into **one lightweight web application** (Flask backend + responsive dark-mode cyber UI):
+1. **URL Phishing & Spoofing Detection** — Analyzes domain structures for deceptive keywords, typosquatting, raw IP usage, and misleading subdomains.
+2. **HTTPS & SSL Certificate Verification** — Verifies TLS encryption, certificate expiration, and self-signed certificates with automated timeouts.
+3. **Email Data Breach Scanner** — Queries public breach databases (via XposedOrNot) to report compromised services and leaked data types.
+4. **Browser Security Audit** — Auto-detects browser client info and benchmarks the installed version against safe reference versions.
+5. **Unified Security Score (0–100)** — Calculates a transparent risk score with itemized deductions and clear, plain-language action items.
+6. **Privacy-First In-Memory History (RAM Cache)** — Temporarily caches recent scans in ephemeral server memory (`collections.deque`), giving users full control to inspect or flush history at any time without mandatory disk persistence.
 
-## Screenshots
+---
 
-[Placeholder — add screenshots of the form and report screens here]
+## ⚡ Key Features
 
-## Tech Stack
+- **Consolidated 3-in-1 Scan**: Run URL, email, and browser audits in a single request.
+- **Explainable Results ("The Why")**: Every flagged finding comes with human-readable rationale and actionable advice (e.g., *"Change your password and enable MFA"* or *"Site uses unencrypted HTTP; avoid entering sensitive data"*).
+- **Independent Module Fault Tolerance**: If one external service (such as the breach API) experiences latency or downtime, the remaining modules execute seamlessly, returning `status: "unavailable"` without failing the request.
+- **Tactical Cyberpunk UI**: Built with a sleek `#000000` dark theme, neon mint (`#2ee6a6`) radar motifs, dynamic SVG score gauge, and responsive mobile/desktop layouts.
+- **Dual-Layer History Architecture**:
+  - **In-Memory Buffer (RAM)**: Ephemeral, session-friendly cache accessible via `GET /recent-scans` and flushable via `DELETE /recent-scans`.
+  - **SQLite Database (`lurkr.db`)**: Optional persistent historical record tracking `scans` and `check_results`.
+- **Zero Heavy Frontend Build Steps**: Pure semantic HTML5, CSS3, and vanilla JavaScript for maximum speed and simplicity.
 
-- **Python + Flask** — backend, ties all checks together into one app
-- **HTML/CSS/JavaScript** (hand-written) — single-page frontend, form + report view
-- **Python `requests` library** — calls external APIs (breach check) from Flask
-- **Python `re` (regex)** — rule-based URL pattern checks, no ML
-- **SQLite** (optional) — only used if scan history feature is built; otherwise not required
+---
 
-## Architecture Overview
-
-Single Flask app, single form-based page. Frontend sends one request to one backend route, which runs three independent checks and returns one combined JSON report.
-
-```
-User fills form (URL, email, browser version)
-        ↓
-JS collects data, calls fetch() to POST /check
-        ↓
-Flask route receives data
-        ↓
-   ┌────────────┬─────────────┬──────────────┐
-   ↓             ↓             ↓
-check_url()   check_email()  check_browser()
-   ↓             ↓             ↓
-   └────────────┴─────────────┘
-        ↓
-Combine results → calculate score
-        ↓
-Return JSON: {score, checks: [...]}
-        ↓
-JS receives JSON, updates page to show report
-```
-
-## Project Structure
+## 🏗️ Architecture & Data Flow
 
 ```
-BSR/
-├── app.py                 # Flask app, routes
-├── checks/
-│   ├── url_check.py        # URL + HTTPS/cert logic
-│   ├── email_check.py      # breach API call
-│   └── browser_check.py    # version comparison
-├── templates/
-│   └── index.html          # single page (form + report sections)
-├── static/
-│   ├── style.css
-│   └── script.js            # fetch() call, DOM update logic
-├── requirements.txt         # Flask, requests, etc.
-└── venv/                    # virtual environment (not pushed to GitHub)
+User submits form (URL, Email, Browser Version)
+                    │
+                    ▼
+          Client-side JavaScript
+    (Auto-detects browser if omitted)
+                    │
+                    ▼  POST /check (JSON)
+           Flask Route (`app.py`)
+                    │
+     ┌──────────────┼──────────────┐
+     ▼              ▼              ▼
+check_url()   check_email()   check_browser()
+(Regex & SSL) (XposedOrNot)   (Version Compare)
+     │              │              │
+     └──────────────┼──────────────┘
+                    │
+                    ▼
+       Scoring Engine (`score_engine.py`)
+         (Calculates 0–100 safety score)
+                    │
+     ┌──────────────┴──────────────┐
+     ▼                             ▼
+In-Memory Store (RAM)       SQLite DB (`lurkr.db`)
+(`memory_store.py`)         (`save_scan()`)
+                    │
+                    ▼
+         JSON Response Return (HTTP 200)
+                    │
+                    ▼
+         Client-side UI Rendering
+  (Dynamic Gauge + Result Cards + Recommendations)
 ```
 
-## Prerequisites
+---
 
-- Python 3.x installed
-- pip installed
-- [Placeholder — add any other prerequisites your team requires]
+## 📁 Project Structure
 
-## Installation
+```
+Lurkr/
+├── API1.md                     # REST API Specification
+├── Design.md                   # UI/UX Specification & Theme Tokens
+├── Readme.md                   # Project Documentation
+├── ds1.md                      # Data Schema Documentation
+├── product resource document.md # Product Requirements Document
+├── system architecture.md      # System Architecture Overview
+└── BSR/                        # Main Application Package
+    ├── app.py                  # Flask entry point & API routes
+    ├── config.py               # Security score deductions & browser benchmarks
+    ├── vercel.json             # Vercel serverless deployment config
+    ├── requirements.txt        # Python package dependencies
+    ├── checks/                 # Modular security check engines
+    │   ├── browser_check.py    # User-agent parsing & version benchmark
+    │   ├── email_check.py      # XposedOrNot breach API integration
+    │   ├── score_engine.py     # Deductions & score calculator
+    │   └── url_check.py        # Phishing heuristics & SSL cert verification
+    ├── database/               # Storage & persistence layer
+    │   ├── db.py               # SQLite connection & scan persistence
+    │   ├── memory_store.py     # Ephemeral RAM deque cache
+    │   ├── lurkr.db            # SQLite database file
+    │   └── schema.sql          # Database initialization schema
+    ├── static/                 # Frontend assets
+    │   ├── style.css           # Tactical dark theme & layout styles
+    │   ├── script.js           # Client interactions, API calls & DOM updates
+    │   ├── favicon.png         # Lurkr radar favicon
+    │   └── logo.png            # Lurkr brand asset
+    ├── templates/
+    │   └── index.html          # Single-page application template
+    └── tests/                  # Automated test suite (18 unit tests)
+        ├── test_app.py
+        ├── test_browser_check.py
+        ├── test_email_check.py
+        ├── test_score_engine.py
+        └── test_url_check.py
+```
 
+---
+
+## ⚙️ Scoring System
+
+Starting from a baseline score of **100**, deductions are applied for verified risks:
+
+| Security Risk | Deduction | Severity |
+| :--- | :---: | :---: |
+| Phishing URL pattern detected | -25 pts | Risk |
+| Invalid / Expired SSL certificate | -20 pts | Risk |
+| Unencrypted HTTP link | -15 pts | Warning |
+| Email exposed in data breach | -25 pts | Risk / Warning |
+| Browser version outdated | -15 pts | Warning |
+| Check skipped or service unavailable | 0 pts | Neutral |
+
+---
+
+## 🚀 Getting Started
+
+### Prerequisites
+- **Python 3.9+**
+- `pip` package manager
+
+### 1. Clone & Navigate
 ```bash
-# Clone the repository
-git clone [Placeholder — add repo URL]
-cd BSR
+git clone https://github.com/Rohan-Kami/Lurkr.git
+cd Lurkr/BSR
+```
 
-# Create a virtual environment
-python -m venv venv
-
-# Activate the virtual environment
-# Windows:
-venv\Scripts\activate
-# macOS/Linux:
+### 2. Create and Activate Virtual Environment
+```bash
+# macOS / Linux
+python3 -m venv venv
 source venv/bin/activate
 
-# Install dependencies
+# Windows (Command Prompt / PowerShell)
+python -m venv venv
+venv\Scripts\activate
+```
+
+### 3. Install Dependencies
+```bash
 pip install -r requirements.txt
 ```
 
-## Environment Variables
-
-BSR uses an external breach-checking API (e.g. Have I Been Pwned) which may require an API key.
-
-```
-BREACH_API_KEY=[Placeholder — add your API key here]
-```
-
-Do not commit your `.env` file or hardcode API keys in source code.
-
-## How to Run — Backend
-
+### 4. Run the Application
 ```bash
-flask run
+python app.py
 ```
+*By default, the server starts on **`http://127.0.0.1:5001`** (configured to port 5001 to prevent macOS AirPlay port 5000 collisions).*
 
-By default, this starts the Flask app locally (e.g. `http://127.0.0.1:5000`) since the frontend is served from the same app (`templates/index.html`), there is no separate frontend server to start.
+---
 
-## How to Run — Frontend
+## 🔌 API Reference
 
-The frontend (`templates/index.html`, `static/style.css`, `static/script.js`) is served directly by the Flask backend — no separate build step or frontend server required. Once `flask run` is running, open the local URL in a browser to use the app.
+### 1. `POST /check`
+Executes security checks across URL, email, and browser version.
 
-## Database Setup
+**Request Headers:**
+`Content-Type: application/json`
 
-No database is required for the core MVP — all checks run and return results within a single request.
-
-If the scan-history feature is implemented, BSR uses SQLite:
-
-```sql
-CREATE TABLE scans (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    created_at TEXT NOT NULL,
-    url TEXT,
-    email TEXT,
-    browser_version TEXT,
-    overall_score INTEGER NOT NULL
-);
-
-CREATE TABLE check_results (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    scan_id INTEGER NOT NULL,
-    check_type TEXT NOT NULL,
-    status TEXT NOT NULL,
-    reason TEXT,
-    recommendation TEXT,
-    FOREIGN KEY (scan_id) REFERENCES scans(id)
-);
-
-CREATE INDEX idx_check_results_scan_id ON check_results(scan_id);
-```
-
-[Placeholder — add instructions for initializing the SQLite file if this feature is built]
-
-## API Documentation
-
-### `POST /check`
-
-Runs all three checks (URL, email, browser version) and returns a combined report.
-
-**Request body:**
-
+**Request Body:**
 ```json
 {
-  "url": "http://fake-bank-login.com",
-  "email": "test@example.com",
+  "url": "http://suspicious-bank-login.com",
+  "email": "user@example.com",
   "browser_version": "118.0"
 }
 ```
+*(All fields are optional; at least one field must be provided).*
 
-**Success response (200):**
-
+**Response (HTTP 200):**
 ```json
 {
-  "overall_score": 62,
+  "overall_score": 50,
   "checks": [
     {
       "check_type": "url",
       "status": "risk",
-      "reason": "Suspicious domain pattern detected; site uses HTTP, not HTTPS",
-      "recommendation": "Avoid visiting this link"
+      "reason": "Suspicious keywords detected (bank, login); Site uses HTTP, not HTTPS",
+      "recommendation": "Do not enter sensitive credentials on this page."
     },
     {
       "check_type": "email",
       "status": "warning",
-      "reason": "Found in known breach",
-      "recommendation": "Change password, enable MFA"
+      "reason": "Found in 2 known data breaches (e.g. Adobe, Dropbox)",
+      "recommendation": "Update passwords on affected services and enable Multi-Factor Authentication (MFA)."
     },
     {
       "check_type": "browser",
-      "status": "pass",
-      "reason": "Browser up to date",
-      "recommendation": null
+      "status": "warning",
+      "reason": "Chrome version 118 is outdated. Minimum safe version is 128.",
+      "recommendation": "Update Chrome to the latest version to patch known security vulnerabilities."
     }
   ]
 }
 ```
 
-**Error responses:**
+---
 
-- `400` — invalid or missing input
-- `500` — unexpected server error
-- `200` (with `"status": "unavailable"` on the affected check) — used when one check (e.g. the breach API) fails, so the rest of the report still returns successfully
+### 2. `GET /recent-scans`
+Retrieves recently cached scans from ephemeral server RAM.
 
-### `GET /health`
+**Response (HTTP 200):**
+```json
+{
+  "count": 1,
+  "storage_type": "Temporary RAM Cache (Not stored permanently on disk)",
+  "scans": [
+    {
+      "timestamp": "2026-09-14T19:30:00.000Z",
+      "url": "http://suspicious-bank-login.com",
+      "email": "user@example.com",
+      "browser_version": "118.0",
+      "overall_score": 50,
+      "checks": [...]
+    }
+  ]
+}
+```
 
-Returns `{ "status": "ok" }` if the server is running. Useful for a quick pre-demo sanity check.
+---
 
-## Testing
+### 3. `DELETE /recent-scans`
+Flushes all items currently stored in ephemeral RAM.
 
-[Placeholder — add testing approach/instructions here, e.g. manual test cases for each check, sample inputs to try]
+**Response (HTTP 200):**
+```json
+{
+  "message": "In-memory temporary cache cleared"
+}
+```
 
-## Deployment
+---
 
-For the hackathon demo, BSR is intended to run locally via `flask run`, demoed on `localhost`.
+### 4. `GET /health`
+Sanity check endpoint for server availability.
 
-Optional public deployment (stretch goal, not required): a free-tier host such as Render or PythonAnywhere can run a small Flask app with minimal setup.
+**Response (HTTP 200):**
+```json
+{
+  "status": "ok"
+}
+```
 
-[Placeholder — add actual deployment URL here if deployed]
+---
 
-## Future Improvements
+## 🧪 Testing
 
-- Extension permission scanner (full implementation)
-- Save/rescan history within the app
-- Browser-extension popup form factor for the whole tool
-- Historical trend tracking across multiple scans
-- Production-grade security hardening (rate limiting, full authentication)
+Lurkr includes comprehensive unit test coverage across all check engines, the scoring engine, and Flask routes.
 
-## Team Members
+To execute the test suite:
+```bash
+python -m unittest discover -s tests
+```
 
-[Placeholder — add team member names and roles here]
+**Test Breakdown (18 tests):**
+- `test_app.py`: Route validation, error handling, JSON responses, RAM cache endpoints.
+- `test_url_check.py`: Domain validation, IP detection, phishing keywords, SSL/HTTPS handling.
+- `test_email_check.py`: Valid email formatting, breach parsing, error fallback behavior.
+- `test_browser_check.py`: User-agent parsing, version extraction, benchmark evaluation.
+- `test_score_engine.py`: Baseline scoring, individual deductions, edge cases.
+
+---
+
+## 🌐 Deployment
+
+Lurkr is production-ready for serverless deployment on platforms such as **Vercel**:
+- Configured via [`BSR/vercel.json`](file:///Users/naveenkumar/.gemini/antigravity/scratch/Lurkr/BSR/vercel.json) using `@vercel/python`.
+- For containerized or standard cloud hosts (e.g. Render, Railway, PythonAnywhere), run `python app.py` with standard environment variables.
+
+---
+
+## 👥 Contributors
+
+- **Rohan Kami** ([@Rohan-Kami](https://github.com/Rohan-Kami))

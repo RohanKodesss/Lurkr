@@ -1,4 +1,4 @@
-# BSR REST API Specification
+# Lurkr REST API Specification
 
 ## Endpoint 1: Run Security Check
 
@@ -74,7 +74,7 @@ Content-Type: application/json
 // 400 — nothing submitted
 { "error": "Invalid request", "details": "at least one of url, email, browser_version required" }
 
-// 502 — breach API unreachable (email check marked unavailable, NOT a full request failure)
+// 200 with partial unavailable — breach API unreachable (email check marked unavailable, NOT a full request failure)
 {
   "overall_score": 55,
   "checks": [
@@ -98,44 +98,82 @@ Content-Type: application/json
 
 ---
 
-## Endpoint 2: Health Check (optional, useful for demo/debugging)
+## Endpoint 2: Temporary History / RAM Cache
+
+### 2a. Fetch Recent In-Memory Scans
+
+**1. HTTP Method:** `GET`
+
+**2. URL:** `/recent-scans`
+
+**3. Purpose:** Retrieves recent security checks temporarily held in server RAM buffer (`collections.deque(maxlen=20)`).
+
+**4. Example Request:**
+```
+GET /recent-scans HTTP/1.1
+```
+
+**5. Example Success Response (200 OK):**
+```json
+{
+  "count": 1,
+  "storage_type": "Temporary RAM Cache (Not stored permanently on disk)",
+  "scans": [
+    {
+      "browser_version": "118.0",
+      "checks": [ ... ],
+      "email": "test@example.com",
+      "overall_score": 62,
+      "timestamp": "2026-09-14T19:30:00.000Z",
+      "url": "http://fake-bank-login.com"
+    }
+  ]
+}
+```
+
+### 2b. Flush Recent In-Memory Scans
+
+**1. HTTP Method:** `DELETE`
+
+**2. URL:** `/recent-scans`
+
+**3. Purpose:** Clears all temporary in-memory scans currently cached in server RAM.
+
+**4. Example Request:**
+```
+DELETE /recent-scans HTTP/1.1
+```
+
+**5. Example Success Response (200 OK):**
+```json
+{
+  "message": "In-memory temporary cache cleared"
+}
+```
+
+---
+
+## Endpoint 3: Health Check
 
 **1. HTTP Method:** `GET`
 
 **2. URL:** `/health`
 
-**3. Purpose:** Confirm server is running — useful for quick demo-day sanity check before judges arrive.
+**3. Purpose:** Confirm server is running — useful for pre-demo sanity checks.
 
-**4. Authentication:** None
-
-**5. Request Parameters:** None
-
-**6. Request Body:** None
-
-**7. Example Request:**
-
+**4. Example Request:**
 ```
 GET /health HTTP/1.1
 ```
 
-**8. Example Success Response:**
-
+**5. Example Success Response (200 OK):**
 ```json
 { "status": "ok" }
 ```
 
-**9. Possible Error Responses:** None expected — if server's down, request just won't reach it.
-
-**10. HTTP Status Codes:**
-
-|Code|Meaning|
-|---|---|
-|200|Server running|
-
 ---
 
-Notes tying back to earlier docs:
-
-- Single `/check` endpoint matches architecture's "one route, all checks together" decision — no need for `/check-url`, `/check-email` separately
-- 200 status even with a partial "unavailable" check matches PRD requirement: one failing check shouldn't fail the whole scan
-- No auth headers anywhere — consistent with no-login MVP scope
+## Architecture Notes
+- Single `/check` endpoint matches architecture's "one route, all checks together" decision — no separate routes required.
+- 200 status even with a partial "unavailable" check matches PRD requirement: one failing check never fails the entire scan.
+- Ephemeral in-memory history (`/recent-scans`) respects user privacy by avoiding forced disk persistence.

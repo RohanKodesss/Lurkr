@@ -1,6 +1,6 @@
 # Lurkr — UI Redesign Spec
 
-Instructions for AI agent: redesign existing Lurkr (BSR) frontend to match this spec. Reference inspiration: uploaded "GuardianAI" mobile UI (shield hero, stat cards, scan-result screen). Adapt structure, replace branding.
+Instructions for AI agent: redesign existing Lurkr frontend to match this spec. Reference inspiration: uploaded "GuardianAI" mobile UI (shield hero, stat cards, scan-result screen). Adapt structure, replace branding.
 
 ## 1. Brand tokens (non-negotiable)
 - Background: pure black `#000000`
@@ -32,7 +32,7 @@ Instructions for AI agent: redesign existing Lurkr (BSR) frontend to match this 
 - Header: back arrow + "Check Links, Avoid Risks"
 - Scan input: search bar, placeholder "Paste a URL to scan"
 - Result card: severity icon + verdict (Safe / Suspicious / Malicious)
-- Bullet list of reasons (why flagged) — this is mandatory, BSR always explains the "why"
+- Bullet list of reasons (why flagged) — this is mandatory, Lurkr always explains the "why"
 - Primary action button: mint-green (safe) or red (block/warn) depending on verdict — never pink
 
 ## 3. Layout rules — Mobile
@@ -52,8 +52,8 @@ Instructions for AI agent: redesign existing Lurkr (BSR) frontend to match this 
 - Replace all purple/pink gradients → mint-green on black
 - Replace generic "ai" shield glyph → Lurkr eye/radar logo
 - Keep: card-based stat layout, gauge/ring indicator, bottom nav pattern, scan-input + result-card pattern
-- Add: reasoning bullet list on every scan result (reference lacks explanation depth BSR requires)
-- Add: severity color system must map to BSR's real categories (Critical/High/Medium/Safe), not decorative colors
+- Add: reasoning bullet list on every scan result (reference lacks explanation depth Lurkr requires)
+- Add: severity color system must map to Lurkr's real categories (Critical/High/Medium/Safe), not decorative colors
 
 ## 6. Agent task order
 1. Set up design tokens (colors, spacing, font) in CSS/theme file

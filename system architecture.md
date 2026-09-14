@@ -1,4 +1,4 @@
-# BSR — Hackathon Architecture Document
+# Lurkr — Hackathon Architecture Document
 
 Team: beginner devs (HTML/CSS/JS basics), using AI coding agent. Goal: simple, explainable, buildable in hackathon time.
 
@@ -8,16 +8,18 @@ Team: beginner devs (HTML/CSS/JS basics), using AI coding agent. Goal: simple, e
 - **HTML/CSS/JavaScript (hand-written)** — single-page frontend, form + report view
 - **Python `requests` library** — calls external APIs (breach check) from Flask
 - **Python `re` (regex)** — rule-based URL pattern checks, no ML needed
-- **SQLite (optional)** — only if scan history nice-to-have gets built; skip otherwise
+- **In-Memory Cache (RAM)** — `database/memory_store.py` for privacy-first temporary scan history
+- **SQLite (optional)** — `database/lurkr.db` for scan history persistence
 
 Why this stack: matches skills team already has (Python 7/10, HTML/CSS 7/10), avoids new frameworks under time pressure, no build tools/compilers needed — plain files, runs directly.
 
 ## 2. Frontend Architecture
 
-One HTML page, two states shown/hidden with JavaScript (not separate pages — avoids page-reload complexity):
+One HTML page, states shown/hidden with JavaScript (not separate pages — avoids page-reload complexity):
 
-- **Form state**: URL input, email input, browser version field (dropdown or auto-filled from `navigator.userAgent`)
-- **Report state**: score + per-check results, shown after form submits
+- **Form state**: URL input, email input, browser version field (auto-filled from `navigator.userAgent`)
+- **Report state**: score gauge + per-check result cards, shown after form submits
+- **History Drawer**: slide-over or collapsible drawer displaying temporary RAM cached scans
 
 JavaScript's job: collect form data, send it to Flask backend (`fetch()` call), receive JSON result, and update the page to show the report — no page reload needed.
 
@@ -25,23 +27,21 @@ Plain language: `fetch()` is JavaScript's way of "calling" your backend from the
 
 ## 3. Backend Architecture
 
-Single Flask app, single file to start (`app.py`), can split into modules once each check works:
+Single Flask app (`app.py`), modularized into clear packages:
 
-- **One route** (e.g. `/check`) accepts form data (URL, email, browser version) as a POST request
-- Route function calls three separate Python functions, one per check:
+- **Primary route** (`POST /check`) accepts form data (URL, email, browser version) as a POST request
+- Route function calls three separate Python check functions:
     - `check_url(url)` — regex rules + HTTPS/cert check
-    - `check_email(email)` — calls breach API
+    - `check_email(email)` — calls XposedOrNot breach API
     - `check_browser(version)` — compares against latest known version
-- Each function returns a small result (status + reason), wrapped in `try/except` so one failing check doesn't crash the others
-- All three results get combined into one score + one JSON response, sent back to frontend
+- Each function returns a structured result (status + reason + recommendation), wrapped in `try/except` so one failing check doesn't crash the others
+- All three results get combined into one score (`calculate_score()`) + saved to temporary RAM cache (`add_to_memory_cache()`) and optional SQLite (`save_scan()`)
+- Returns combined JSON response to frontend
 
-Plain language: a "route" is just "when the frontend sends data to this address, run this Python function." One route is enough here — you don't need separate routes per check since the frontend submits everything together.
+## 4. In-Memory & Database Architecture
 
-## 4. Database Choice
-
-**None required for MVP.** Score, report, and check results are calculated and returned in the same request — nothing needs to be saved.
-
-If scan history nice-to-have gets built: SQLite, since it's a single file, no server setup, built into Python already (`import sqlite3`). Not worth adding unless MVP is done early with time to spare.
+- **Temporary RAM Cache** (`database/memory_store.py`): Uses Python's `collections.deque(maxlen=20)` to temporarily hold the most recent scans in server RAM. Flushed on restart or via `DELETE /recent-scans`. Respects user privacy.
+- **SQLite Persistence** (`database/lurkr.db`): Provides historical records in `scans` and `check_results` tables via `database/db.py`.
 
 ## 5. Authentication Approach
 
@@ -49,12 +49,12 @@ If scan history nice-to-have gets built: SQLite, since it's a single file, no se
 
 ## 6. External APIs / Services
 
-- **Have I Been Pwned API** (or similar free breach-check API) — for email breach checking. Free tier may need an API key; check their docs before demo day so you're not blocked last minute.
+- **XposedOrNot API** (or Have I Been Pwned) — for email breach checking. Fast, reliable, with graceful fallback on timeouts.
 - No other external services needed — URL rules and browser version check are done with local logic, no external API required for those.
 
 ## 7. AI Model Integration
 
-**Not required.** PRD explicitly rules out ML-based phishing detection for the hackathon — rule-based regex checks are enough and far faster to build/debug/explain in a demo or viva. Mentioning "future work: ML-based detection" in the pitch is fine, but don't build it.
+**Not required for MVP.** PRD explicitly rules out ML-based phishing detection for the hackathon — rule-based regex checks are enough and far faster to build/debug/explain in a demo or viva. Mentioning "future work: ML-based detection" in the pitch is fine, but don't build it.
 
 ## 8. Complete Request/Data Flow
 
@@ -73,30 +73,52 @@ check_url()  check_email()  check_browser()
         ↓
 Combine results → calculate score
         ↓
-Return JSON: {score, checks: [...]}
+Save to RAM cache (`memory_store`) + SQLite (`lurkr.db`)
         ↓
-JS receives JSON, updates page to show report
+Return JSON: {overall_score, checks: [...]}
+        ↓
+JS receives JSON, updates page to show report & gauge
 ```
 
 ## 9. Folder Structure
 
 ```
-BSR/
-├── app.py                 # Flask app, routes
-├── checks/
-│   ├── url_check.py        # URL + HTTPS/cert logic
-│   ├── email_check.py      # breach API call
-│   └── browser_check.py    # version comparison
-├── templates/
-│   └── index.html          # single page (form + report sections)
-├── static/
-│   ├── style.css
-│   └── script.js            # fetch() call, DOM update logic
-├── requirements.txt         # Flask, requests, etc.
-└── venv/                    # virtual environment (not pushed to GitHub)
+Lurkr/
+├── API1.md
+├── Design.md
+├── Readme.md
+├── ds1.md
+├── product resource document.md
+├── system architecture.md
+└── BSR/
+    ├── app.py                 # Flask app, routes
+    ├── config.py              # Benchmarks & deduction constants
+    ├── vercel.json            # Vercel serverless deployment config
+    ├── requirements.txt       # Flask, requests, etc.
+    ├── checks/
+    │   ├── url_check.py       # URL + HTTPS/cert logic
+    │   ├── email_check.py     # breach API call
+    │   ├── browser_check.py   # version comparison
+    │   └── score_engine.py    # score calculation
+    ├── database/
+    │   ├── db.py              # SQLite storage logic
+    │   ├── memory_store.py    # In-memory RAM deque cache
+    │   ├── lurkr.db           # SQLite database
+    │   └── schema.sql         # Database schema
+    ├── templates/
+    │   └── index.html         # single page (form + report sections)
+    ├── static/
+    │   ├── style.css          # Dark cyber theme styling
+    │   ├── script.js          # fetch() call, DOM update logic
+    │   ├── favicon.png        # Favicon
+    │   └── logo.png           # Brand logo
+    └── tests/                 # Unit test suite
+        ├── test_app.py
+        ├── test_browser_check.py
+        ├── test_email_check.py
+        ├── test_score_engine.py
+        └── test_url_check.py
 ```
-
-Plain language: separating each check into its own file in `checks/` keeps `app.py` short and readable — each file does one job, easy to explain individually in a viva.
 
 ## 10. Major Components
 
@@ -106,29 +128,29 @@ Plain language: separating each check into its own file in `checks/` keeps `app.
 4. **Email check module** — breach API integration
 5. **Browser check module** — version comparison logic
 6. **Score engine** — combines all check results into one score
-7. **Report formatter** — structures combined JSON response for frontend display
+7. **RAM Memory Store** (`memory_store.py`) — privacy-first ephemeral history
+8. **SQLite Database** (`db.py` & `lurkr.db`) — persistent scan logging
 
 ## 11. Security Considerations
 
 - Validate all inputs server-side (don't trust the frontend alone) — check URL format, email format before processing
-- Don't log or store submitted emails/URLs beyond the request itself (matches PRD privacy requirement)
+- Don't log or store submitted emails/URLs permanently without user awareness; provide RAM-only cache with clear endpoints
 - Handle API errors without exposing raw error messages/stack traces to the user
-- Use HTTPS if deploying publicly (not required for local demo)
-- Keep any API keys (breach API) out of code — use environment variables, don't hardcode or push to GitHub
+- Run locally on port 5001 to avoid default macOS AirPlay port 5000 conflicts
+- Use HTTPS if deploying publicly
+- Keep any API keys out of code — use environment variables, don't hardcode or push to GitHub
 
 ## 12. Deployment Architecture
 
-**For hackathon demo: run locally.** `flask run` on the laptop, demo via `localhost`, no deployment needed.
-
-If public deployment is wanted for judging/bonus points: a free tier host like Render or PythonAnywhere can run a small Flask app with minimal setup — optional, not required for core demo.
+- **Local demo**: `python app.py` (or `flask run --port=5001`), demo via `localhost:5001`.
+- **Public deployment**: Serverless deployment via Vercel (`vercel.json`) or platforms like Render/PythonAnywhere.
 
 ## 13. Simplifications for Hackathon
 
-- No database — calculate everything per-request
+- In-memory cache + lightweight SQLite — calculate everything fast per-request
 - No login/auth — anonymous single-use tool
 - No ML — regex/rule-based checks only
 - No extension scanner — mentioned as future work only
-- One Flask app, one route for all checks — not microservices
-- Browser version: dropdown selection is an acceptable fallback if auto-detection via `navigator.userAgent` proves fiddly
-- Single HTML page with JS show/hide — no multi-page routing needed
-- Local demo only — public deployment is a stretch goal, not a requirement
+- One Flask app, one primary route for all checks — not microservices
+- Browser version auto-detection via `navigator.userAgent` with manual override capability
+- Single HTML page with dynamic JS state transitions — no multi-page routing needed
